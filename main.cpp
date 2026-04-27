@@ -18,7 +18,7 @@
 #include "OrderFinalizer.h"
 #include "HistoryLogger.h"
 using namespace std;
-string base = "C:\\Users\\loq\\OneDrive\\Desktop\\oop project\\oop\\x64\\Debug\\";
+string base = "";#حط الملفات جوا فولدر واعملهم copy path  وضيف الباث بتاعك هنا
 int getInt(string prompt) {
     int val;
     while (true) {
