@@ -195,10 +195,10 @@ int main() {
                     case 1: fileName = "pcs_data.csv"; break;
                     case 2: fileName = "clothes_data.csv"; break;
                     case 3: fileName = "shoes_data.csv"; break;
-                    case 4: fileName = "sports_data.csv"; break;
+                    case 4: fileName = "sports&fitness_data.csv"; break;
                     case 5: fileName = "beauty&health_data.csv"; break;
                     case 6: fileName = "playstations_data.csv"; break;
-                    case 7: fileName = "toys_data.csv"; break;
+                    case 7: fileName = "toys&games_data.csv"; break;
                     case 8: fileName = "books_data.csv"; break;
                     case 9: fileName = "appliances_data.csv"; break;
                     case 10: fileName = "accessories_data.csv"; break;
