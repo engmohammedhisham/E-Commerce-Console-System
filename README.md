@@ -1,40 +1,39 @@
-#  E-Commerce Console System (C++)
+# Console E-Commerce & Store Management System
 
-A comprehensive Command Line Interface (CLI) application built with **C++** using **Object-Oriented Programming (OOP)**. This system simulates a real-world store environment with two main roles: **Admin** and **Customer**, each with a dedicated set of functionalities.
+A fully functional, terminal-based e-commerce and store management system built entirely in C++. This project focuses on applying advanced software engineering practices, clean code architecture, and delivering a highly interactive and engaging user experience right inside the console.
 
-##  Key Modules & File Structure
+## 🚀 Tech Stack
 
-The project is structured into modular components to ensure scalability and clean code:
+* **Programming Language:** C++ (Requires C++17 or higher).
+* **UI Library:** **FTXUI Library** to build interactive, animated graphical user interfaces (GUI), menus, and pop-ups directly within the terminal.
+* **Data Management:** **File Handling (CSV)** for persistent and reliable storage of products, user accounts, and purchase histories.
+* **Architecture:** **Object-Oriented Programming (OOP)** to ensure a modular codebase, clear separation of concerns, and easy future scalability.
 
-###  Authentication & User Roles
-* **`AccountCreator` (.h/.cpp):** Handles the logic for registering new customer accounts.
-* **`Admin` (.h/.cpp):** Inherits from the `User` class; allows administrative actions like adding products to the inventory.
-* **`Customer` (.h/.cpp):** Inherits from the `User` class; manages customer-specific data and purchase history.
-* **`User.h`**: The base class for both Admins and Customers, demonstrating **Inheritance**.
+## ✨ Key Features
 
-###  Shopping Experience
-* **`Cart` (.h/.cpp):** Manages the user's shopping session, including adding items, calculating totals, and generating a formatted receipt.
-* **`DiscountApplier` (.h/.cpp):** A utility class that processes promo codes (e.g., `DIS10`, `DIS20`) to apply discounts on the total price.
-* **`main.cpp`**: The central controller that manages the application flow, including the login system and the search tool.
+### 1. Customer Portal
+* **Browse Products:** Users can navigate through various categorized products (e.g., PCs, Clothes, Shoes, Books, etc.).
+* **Cart System:** Add items to the shopping cart, specify quantities, and automatically calculate total prices.
+* **Checkout Process:** Finalize orders, print detailed purchase receipts, and log the transaction into the customer's history.
 
-###  Inventory & Logic
-* **`InventoryManager`**: Orchestrates product data across various categories (Computers, Clothes, etc.).
-* **`SearchTool`**: Provides a global search functionality to find products by name across the entire store.
-* **`Product.h`**: Defines the properties and attributes of items available in the store.
+### 2. Admin Panel
+* **Inventory Viewing:** Admins have full access to view all available products across different categories.
+* **Product Management:** Add new products with unique IDs and prices, or delete existing products from the inventory.
+* **Auto-Save:** Any modifications made by the admin are instantly synced and saved to the respective CSV database files.
 
-##  OOP Concepts Applied
-* **Inheritance:** Derived `Admin` and `Customer` from a common `User` base class.
-* **Encapsulation:** Protecting internal data and providing access through public methods.
-* **Static Methods:** Used in `AccountCreator` and `DiscountApplier` for utility functions that don't require object instantiation.
-* **Data Persistence:** Uses File I/O to save/load products and customer accounts to `.csv` and `.txt` files.
+## 📁 Project Structure
 
-##  How to Run
-1. Clone the repository.
-2. Open the project in **Visual Studio**.
-3. **Critical:** Update the `base` string in `main.cpp` to your local project directory path where the data files are located.
-4. Build and Run (`Ctrl + F5`).
+* `main.cpp`: The entry point of the application, handling the main flow and FTXUI menu rendering.
+* `InventoryManager`: Manages the store's products (adding, deleting, and displaying).
+* `Cart`: Represents the user's shopping cart, handling item tracking and price calculations.
+* `FileManager`: Handles reading from and writing to CSV files to ensure data persistence.
+* `OrderFinalizer`: Processes the final checkout, applies logic, and generates receipts.
+* `HistoryLogger`: Records and archives user transactions and purchase history.
 
-## 🛠️ Requirements
-* C++11 or higher.
-* Windows OS (for `system("cls")` support).
-* 
+## ⚙️ How to Run
+
+1. Ensure the `FTXUI` library is installed and properly linked in your development environment (e.g., Visual Studio).
+2. Clone this repository to your local machine.
+3. Open `main.cpp` and update the `base` path variable to match the absolute path of your project's data folder:
+   ```cpp
+   string base = "D:\\path_to_your_project\\data\\";
