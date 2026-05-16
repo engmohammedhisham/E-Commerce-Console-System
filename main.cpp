@@ -1,9 +1,11 @@
 #include <iostream>
 #include <string>
-#include <limits>
 #include <vector>
 #include <fstream>
 #include <cstdlib>
+#include <ftxui/component/component.hpp>
+#include <ftxui/component/screen_interactive.hpp>
+#include <ftxui/dom/elements.hpp>
 #include "InventoryManager.h"
 #include "FileManager.h"
 #include "Cart.h"
@@ -14,262 +16,260 @@
 #include "AccountCreator.h"
 #include "LoginValidator.h"
 #include "SearchTool.h"
-#include "DiscountApplier.h"
 #include "OrderFinalizer.h"
 #include "HistoryLogger.h"
+#include "DiscountApplier.h"
+
 using namespace std;
-string base = "";#حط الملفات جوا فولدر واعملهم copy path  وضيف الباث بتاعك هنا
-int getInt(string prompt) {
-    int val;
+using namespace ftxui;
+
+string base = "D:\\my projects\\New folder\\final project\\x64\\";
+
+int showMenu(string title, vector<string> entries) {
+    auto screen = ScreenInteractive::TerminalOutput();
+    int selected = 0;
+    MenuOption option;
+    option.on_enter = screen.ExitLoopClosure();
+    auto menu = Menu(&entries, &selected, option);
+    auto renderer = Renderer(menu, [&] {
+        return window(text(title) | bold | center, menu->Render() | frame) | center;
+        });
+    screen.Loop(renderer);
+    return selected;
+}
+
+string inputGUI(string prompt_text, string title) {
+    auto screen = ScreenInteractive::FitComponent();
+    string input_str;
+    InputOption option;
+    option.on_enter = screen.ExitLoopClosure();
+    auto input_comp = Input(&input_str, "...", option);
+    auto renderer = Renderer(input_comp, [&] {
+        return window(text(title) | bold | color(Color::Green),
+            vbox({ text(prompt_text), separator(), input_comp->Render() }));
+        });
+    screen.Loop(renderer);
+    return input_str;
+}
+
+void msgGUI(string msg, string title) {
+    auto screen = ScreenInteractive::FitComponent();
+    auto btn = Button("OK", screen.ExitLoopClosure());
+    auto renderer = Renderer(btn, [&] {
+        return window(text(title) | bold | color(Color::Yellow),
+            vbox({ text(msg), separator(), btn->Render() | center }));
+        });
+    screen.Loop(renderer);
+}
+
+int getIntGUI(string prompt, string title) {
     while (true) {
-        cout << prompt;
-        if (cin >> val) {
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            return val;
-        }
-        cin.clear();
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-        cout << "[!] Invalid input. Please enter a number." << endl;
+        string res = inputGUI(prompt, title);
+        if (res.empty()) return 0;
+        try { return stoi(res); }
+        catch (...) { msgGUI("Invalid Number", "Error"); }
     }
 }
-void displayMainMenu() {
-    cout << "\n==============================================" << endl;
-    cout << "                 MAIN MENU                    " << endl;
-    cout << "==============================================" << endl;
-    cout << "1. Browse Categories & Products" << endl;
-    cout << "2. Search for a Product" << endl;
-    cout << "3. View Cart" << endl;
-    cout << "4. Checkout & Print Receipt" << endl;
-    cout << "0. Logout / Exit" << endl;
-    cout << "==============================================" << endl;
+
+double getDoubleGUI(string prompt, string title) {
+    while (true) {
+        string res = inputGUI(prompt, title);
+        if (res.empty()) return 0.0;
+        try { return stod(res); }
+        catch (...) { msgGUI("Invalid Price", "Error"); }
+    }
 }
-void displayCategoriesOnly() {
-    cout << "\n==============================================" << endl;
-    cout << "                 CATEGORIES                   " << endl;
-    cout << "==============================================" << endl;
-    cout << "1. Computers & PCs     7. Toys & Games" << endl;
-    cout << "2. Clothes             8. Books" << endl;
-    cout << "3. Shoes               9. Home Appliances" << endl;
-    cout << "4. Sports & Fitness    10. Accessories" << endl;
-    cout << "5. Beauty & Health     11. iPhones" << endl;
-    cout << "6. PlayStations        12. Laptops" << endl;
-    cout << "0. Back" << endl;
-    cout << "==============================================" << endl;
+
+bool loginFormGUI(string& out_username, string& out_password) {
+    auto screen = ScreenInteractive::TerminalOutput();
+    string username = "";
+    string password = "";
+    bool submit = false;
+    InputOption pass_option;
+    pass_option.password = true;
+    Component input_user = Input(&username, "Username");
+    Component input_pass = Input(&password, "Password", pass_option);
+    auto btn_submit = Button("Login", [&] { submit = true; screen.ExitLoopClosure()(); });
+    auto btn_cancel = Button("Cancel", screen.ExitLoopClosure());
+    auto container = Container::Vertical({ input_user, input_pass, Container::Horizontal({btn_submit, btn_cancel}) });
+    auto renderer = Renderer(container, [&] {
+        return window(text(" LOGIN ") | bold | color(Color::Cyan) | center,
+            vbox({
+                hbox({text(" Username : "), input_user->Render()}),
+                separator(),
+                hbox({text(" Password : "), input_pass->Render()}),
+                separator(),
+                hbox({btn_submit->Render(), text("  "), btn_cancel->Render()}) | center
+                })
+        ) | center;
+        });
+    screen.Loop(renderer);
+    out_username = username;
+    out_password = password;
+    return submit;
 }
+
+bool registerFormGUI(string& out_username, string& out_password, string& out_email) {
+    auto screen = ScreenInteractive::TerminalOutput();
+    string username = "";
+    string password = "";
+    string email = "";
+    bool submit = false;
+    InputOption pass_option;
+    pass_option.password = true;
+    Component input_user = Input(&username, "Username");
+    Component input_pass = Input(&password, "Password", pass_option);
+    Component input_email = Input(&email, "Email");
+    auto btn_submit = Button("Register", [&] { submit = true; screen.ExitLoopClosure()(); });
+    auto btn_cancel = Button("Cancel", screen.ExitLoopClosure());
+    auto container = Container::Vertical({ input_user, input_pass, input_email, Container::Horizontal({btn_submit, btn_cancel}) });
+    auto renderer = Renderer(container, [&] {
+        return window(text(" REGISTER ") | bold | color(Color::Magenta) | center,
+            vbox({
+                hbox({text(" Username : "), input_user->Render()}),
+                separator(),
+                hbox({text(" Password : "), input_pass->Render()}),
+                separator(),
+                hbox({text(" Email    : "), input_email->Render()}),
+                separator(),
+                hbox({btn_submit->Render(), text("  "), btn_cancel->Render()}) | center
+                })
+        ) | center;
+        });
+    screen.Loop(renderer);
+    out_username = username;
+    out_password = password;
+    out_email = email;
+    return submit;
+}
+
+vector<string> getCategoriesList() {
+    return { "1. PCs", "2. Clothes", "3. Shoes", "4. Sports", "5. Beauty", "6. PS", "7. Toys", "8. Books", "9. Home", "10. Acc", "11. iPhone", "12. Laptops", "0. Back" };
+}
+
 void handleAdminMenu(InventoryManager& inv, string path) {
+    vector<string> adminOptions = { "1. Display All", "2. Add", "3. Delete", "4. Save & Back" };
     while (true) {
-        system("cls");
-        cout << "\n==============================================" << endl;
-        cout << "                 ADMIN PANEL                  " << endl;
-        cout << "==============================================" << endl;
-        cout << "1. Display All Products" << endl;
-        cout << "2. Add Product" << endl;
-        cout << "3. Delete Product" << endl;
-        cout << "4. Save & Back to Categories" << endl;
-        cout << "==============================================" << endl;
-        int choice = getInt("Choice: ");
-        if (choice == 4) {
-            FileManager::saveToFile(inv, path);
-            break;
-        }
-        if (choice == 1) {
-            system("cls");
-            inv.displayAllProducts();
-            system("pause");
-        }
-        if (choice == 2) {
-            int id = getInt("ID: ");
-            string name; cout << "Name: "; cin >> name;
-            double price; cout << "Price: "; cin >> price;
+        int choiceIdx = showMenu("ADMIN PANEL", adminOptions);
+        if (choiceIdx == 3) { FileManager::saveToFile(inv, path); break; }
+        if (choiceIdx == 0) { system("cls"); inv.displayAllProducts(); msgGUI("Done", "Info"); }
+        if (choiceIdx == 1) {
+            int id = getIntGUI("ID:", "Add");
+            if (id == 0) continue;
+            string name = inputGUI("Name:", "Add");
+            double price = getDoubleGUI("Price:", "Add");
             inv.addProduct(Product(id, name, price));
-            cout << "Product Added!\n";
-            system("pause");
         }
-        if (choice == 3) {
-            int id = getInt("ID to delete: ");
-            if (inv.deleteProduct(id)) cout << "Deleted." << endl;
-            else cout << "Not found." << endl;
-            system("pause");
+        if (choiceIdx == 2) {
+            int id = getIntGUI("ID to Delete:", "Delete");
+            if (id != 0) inv.deleteProduct(id);
         }
     }
 }
+
 int main() {
-    while (true) { 
+    vector<string> startOptions = { "1. Login", "2. Register", "0. Exit" };
+    vector<string> mainOptions = { "1. Browse Store", "2. View Cart", "3. Checkout", "0. Logout" };
+    AccountCreator accountCreator;
+    LoginValidator loginValidator;
+
+    while (true) {
         InventoryManager myInventory;
         Cart myCart;
         OrderFinalizer finalizer;
-        string activeUser = "Guest";
+        string activeUser = "";
         Customer* loggedInCustomer = nullptr;
-        system("cls");
-        cout << "==============================================" << endl;
-        cout << "          WELCOME TO OUR STORE                " << endl;
-        cout << "==============================================" << endl;
-        cout << "1. Login" << endl;
-        cout << "2. Register New Account" << endl;
-        cout << "0. Shutdown System" << endl;
-        int startChoice = getInt("Choose: ");
-        if (startChoice == 0) return 0;
-        if (startChoice == 2) {
-            string uname, pass, email;
-            cout << "Enter Username: "; cin >> uname;
-            cout << "Enter Password: "; cin >> pass;
-            cout << "Enter Email: "; cin >> email;
-            AccountCreator::registerNewCustomer(uname, pass, email);
-            cout << "\nAccount created successfully! Please login.\n";
-            system("pause");
+
+        int sIdx = showMenu("WELCOME", startOptions);
+        if (sIdx == 2) return 0;
+
+        if (sIdx == 1) {
+            string uname, pass, mail;
+            if (registerFormGUI(uname, pass, mail)) {
+                if (!uname.empty() && !pass.empty()) {
+                    accountCreator.registerNewCustomer(uname, pass, mail);
+                    msgGUI("Registered!", "Success");
+                }
+            }
             continue;
         }
-        if (startChoice == 1) {
-            system("cls");
+
+        if (sIdx == 0) {
             string uname, pass;
-            cout << "==============================================" << endl;
-            cout << "                 LOGIN SYSTEM                 " << endl;
-            cout << "==============================================" << endl;
-            cout << "Username: "; cin >> uname;
-            cout << "Password: "; cin >> pass;  
-            if ((uname == "mohammed" || uname == "Mohammed") && pass == "2512007") {
-                while (true) {
-                    system("cls");
-                    cout << "\n[ ADMIN MODE ] - Select Category to Manage:\n";
-                    displayCategoriesOnly();
-                    int catChoice = getInt("Choose Category: ");
-                    if (catChoice == 0) { 
-                        break; 
+            if (loginFormGUI(uname, pass)) {
+                if ((uname == "mohammed" || uname == "Mohammed") && pass == "2512007") {
+                    while (true) {
+                        int cIdx = showMenu("ADMIN CATEGORIES", getCategoriesList());
+                        if (cIdx == 12) break;
+                        string files[] = { "pcs_data.csv","clothes_data.csv","shoes_data.csv","sports&fitness_data.csv","beauty&health_data.csv","playstations_data.csv","toys&games_data.csv","books_data.csv","appliances_data.csv","accessories_data.csv","iphones_data.csv","laptops_data.csv" };
+                        string fullPath = base + files[cIdx];
+                        InventoryManager adminInv;
+                        FileManager::loadFromFile(adminInv, fullPath);
+                        handleAdminMenu(adminInv, fullPath);
                     }
-                    string fileName = "";
-                    switch (catChoice) {
-                    case 1: fileName = "pcs_data.csv"; break;
-                    case 2: fileName = "clothes_data.csv"; break;
-                    case 3: fileName = "shoes_data.csv"; break;
-                    case 4: fileName = "sports&fitness_data.csv"; break;
-                    case 5: fileName = "beauty&health_data.csv"; break;
-                    case 6: fileName = "playstations_data.csv"; break;
-                    case 7: fileName = "toys&games_data.csv"; break;
-                    case 8: fileName = "books_data.csv"; break;
-                    case 9: fileName = "appliances_data.csv"; break;
-                    case 10: fileName = "accessories_data.csv"; break;
-                    case 11: fileName = "iphones_data.csv"; break;
-                    case 12: fileName = "laptops_data.csv"; break;
-                    default: continue;
-                    }
-                    string fullPath = base + fileName;
-                    InventoryManager adminInv;
-                    FileManager::loadFromFile(adminInv, fullPath);
-                    handleAdminMenu(adminInv, fullPath);
-                }
-                continue; 
-            }
-            else {
-                if (LoginValidator::validateCustomerLogin(uname, pass)) {
-                    cout << "\n[+] Login Successful! Welcome, " << uname << "!\n";
-                    system("pause");
-                    activeUser = uname;
-                    loggedInCustomer = new Customer(uname, pass, uname + "@store.com");
-                }
-                else {
-                    cout << "\n[-] Invalid Login. Try again.\n";
-                    system("pause");
                     continue;
                 }
+                else {
+                    if (loginValidator.validateCustomerLogin(uname, pass)) {
+                        activeUser = uname;
+                        loggedInCustomer = new Customer(uname, pass, uname + "@store.com");
+                    }
+                    else {
+                        msgGUI("Login Failed!", "Error");
+                        continue;
+                    }
+                }
             }
+            else continue;
         }
-        bool userSession = true;
-        while (userSession) {
-            system("cls");
-            displayMainMenu();
-            int choice = getInt("Choose: ");
-            if (choice == 0) {
-                userSession = false;
-                break;
-            }
-            if (choice == 1) {
-                while (true) {
+
+        while (loggedInCustomer != nullptr) {
+            int mIdx = showMenu("USER: " + activeUser, mainOptions);
+            if (mIdx == 3) { delete loggedInCustomer; loggedInCustomer = nullptr; break; }
+
+            if (mIdx == 0) {
+                int cIdx = showMenu("CATEGORIES", getCategoriesList());
+                if (cIdx != 12) {
+                    string files[] = { "pcs_data.csv","clothes_data.csv","shoes_data.csv","sports&fitness_data.csv","beauty&health_data.csv","playstations_data.csv","toys&games_data.csv","books_data.csv","appliances_data.csv","accessories_data.csv","iphones_data.csv","laptops_data.csv" };
+                    myInventory = InventoryManager();
+                    FileManager::loadFromFile(myInventory, base + files[cIdx]);
                     system("cls");
-                    displayCategoriesOnly();
-                    int catChoice = getInt("Choose Category: ");
-                    if (catChoice == 0) { 
-                        break; 
-                    }
-                    string fileName = "";
-                    switch (catChoice) {
-                    case 1: fileName = "pcs_data.csv"; break;
-                    case 2: fileName = "clothes_data.csv"; break;
-                    case 3: fileName = "shoes_data.csv"; break;
-                    case 4: fileName = "sports&fitness_data.csv"; break;
-                    case 5: fileName = "beauty&health_data.csv"; break;
-                    case 6: fileName = "playstations_data.csv"; break;
-                    case 7: fileName = "toys&games_data.csv"; break;
-                    case 8: fileName = "books_data.csv"; break;
-                    case 9: fileName = "appliances_data.csv"; break;
-                    case 10: fileName = "accessories_data.csv"; break;
-                    case 11: fileName = "iphones_data.csv"; break;
-                    case 12: fileName = "laptops_data.csv"; break;
-                    default: continue;
-                    }
-                    string fullPath = base + fileName;
-                    myInventory = InventoryManager(); 
-                    FileManager::loadFromFile(myInventory, fullPath);
-                    system("cls");
-                    cout << "\n--- Products in " << fileName << " ---\n";
                     myInventory.displayAllProducts();
-                    cout << "\n1. Add to Cart | 0. Back: ";
-                    if (getInt("") == 1) {
-                        int id = getInt("Enter Product ID: ");
-                        Product* p = SearchTool::findById(myInventory, id);
-                        if (p != nullptr) {
-                            int q = getInt("Qty: ");
-                            myCart.addItem(p->getId(), p->getName(), p->getPrice(), q);
-                            cout << "\n[+] Added to cart!\n";
-                        }
-                        else cout << "\n[-] ID not found!\n";
-                        system("pause");
-                    }
-                }
-            }
-            else if (choice == 2) {
-                system("cls");
-                string sName;
-                cout << "Search (Case-Sensitive): ";
-                cin >> sName;
-                vector<string> files = { "pcs_data.csv", "clothes_data.csv", "shoes_data.csv", "sports_data.csv", "beauty&health_data.csv", "playstations_data.csv", "toys_data.csv", "books_data.csv", "appliances_data.csv", "accessories_data.csv", "iphones_data.csv", "laptops_data.csv" };
-                bool foundAny = false;
-                for (const string& f : files) {
-                    InventoryManager temp;
-                    FileManager::loadFromFile(temp, base + f);
-                    Product* p = SearchTool::findByName(temp, sName);
+                    int id = getIntGUI("Enter Product ID:", "Cart");
+                    Product* p = SearchTool::findById(myInventory, id);
                     if (p) {
-                        cout << "[+] Found: " << p->getName() << " ($" << p->getPrice() << ") in " << f << endl;
-                        foundAny = true;
+                        int q = getIntGUI("Quantity:", "Cart");
+                        myCart.addItem(p->getId(), p->getName(), p->getPrice(), q);
+                        msgGUI("Item Added!", "Success");
                     }
+                    else msgGUI("Not Found!", "Error");
                 }
-                if (!foundAny) cout << "[-] Not found.\n";
-                system("pause");
             }
-            else if (choice == 3) {
-                system("cls");
-                myCart.viewCart();
-                system("pause");
-            }
-            else if (choice == 4) {
-                system("cls");
-                myCart.viewCart();
-                if (loggedInCustomer && myCart.getTotalPrice() > 0) {
-                    cout << "\n1. Checkout | 0. Back: ";
-                    if (getInt("") == 1) {
-                        string promo; cout << "Promo Code (or 'none'): "; cin >> promo;
-                        double finalPrice = DiscountApplier::applyPromoCode(promo, myCart.getTotalPrice());
-                        finalizer.processCheckout(myCart, *loggedInCustomer);
-                        finalizer.printReceipt(myCart, finalPrice);
-                        HistoryLogger::saveOrderToHistory(*loggedInCustomer, myCart, finalPrice);
-                        myCart = Cart();
+            if (mIdx == 1) { system("cls"); myCart.viewCart(); msgGUI("Back", "Cart"); }
+            if (mIdx == 2) {
+                double totalPrice = myCart.getTotalPrice();
+                if (totalPrice > 0) {
+                    string promo = inputGUI("Enter Promo Code (or leave empty):", "Discount");
+                    double finalPrice = DiscountApplier::applyPromoCode(promo, totalPrice);
+
+                    if (finalPrice < totalPrice) {
+                        msgGUI("Promo Code Applied! New Total: " + to_string(finalPrice), "Success");
                     }
+                    else if (!promo.empty()) {
+                        msgGUI("Invalid Promo Code.", "Warning");
+                    }
+
+                    finalizer.processCheckout(myCart, *loggedInCustomer);
+                    system("cls");
+                    finalizer.printReceipt(myCart, finalPrice);
+                    HistoryLogger::saveOrderToHistory(*loggedInCustomer, myCart, finalPrice);
+                    myCart = Cart();
+                    msgGUI("Order Placed Successfully!", "Success");
                 }
-                else cout << "\nCart is empty!\n";
-                system("pause");
+                else {
+                    msgGUI("Cart is empty!", "Warning");
+                }
             }
-        }
-        if (loggedInCustomer) {
-            delete loggedInCustomer; loggedInCustomer = nullptr;
         }
     }
     return 0;
