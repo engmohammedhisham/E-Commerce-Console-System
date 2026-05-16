@@ -1,19 +1,21 @@
 #include "DiscountApplier.h"
+#include <algorithm>
 
-//  كود الخصم
-double DiscountApplier::applyPromoCode(string promoCode, double totalAmount) {
+double DiscountApplier::applyPromoCode(const std::string& promoCode, double totalAmount) {
+    string code = promoCode;
 
-    double finalPrice = totalAmount;
+    code.erase(0, code.find_first_not_of(" \t\n\r"));
+    code.erase(code.find_last_not_of(" \t\n\r") + 1);
 
-    if (promoCode == "DIS10") {
-        finalPrice = totalAmount * 0.9;   // خصم 10
-    }
-    else if (promoCode == "DIS20") {
-        finalPrice = totalAmount * 0.8;   // خصم 20
-    }
-    else {
-        finalPrice = totalAmount;         // مفيش خصم
+    for (auto& c : code) c = toupper(c);
+
+    if (code == "DIS10") {
+        return totalAmount * 0.9;
     }
 
-    return finalPrice;
+    if (code == "DIS20") {
+        return totalAmount * 0.8;
+    }
+
+    return totalAmount;
 }
