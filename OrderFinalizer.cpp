@@ -9,13 +9,11 @@ void OrderFinalizer::processCheckout(Cart& currentCart, Customer& currentCustome
 
     double total = 0;
 
-    // حساب التوتال
-    currentCart.viewCart();   // ده بيطبع الفاتورة 
+    currentCart.viewCart();    
 
     cout << "\nCheckout completed successfully!\n";
 }
 
-// ptin cart
 void OrderFinalizer::printReceipt(const Cart& currentCart, double finalTotal) {
     cout << "\n===== FINAL RECEIPT =====\n";
     cout << "Total Paid: $" << finalTotal << endl;
