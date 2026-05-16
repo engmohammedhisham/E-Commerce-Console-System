@@ -5,7 +5,6 @@
 
 class OrderFinalizer {
 public:
-    //  بتستلم السلة وتحسب النهائي وتطبع الفاتورة
     void processCheckout(Cart& currentCart, Customer& currentCustomer);
     void printReceipt(const Cart& currentCart, double finalTotal);
 };
