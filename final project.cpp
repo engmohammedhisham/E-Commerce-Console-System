@@ -23,7 +23,7 @@
 using namespace std;
 using namespace ftxui;
 
-string base = "D:\\my projects\\New folder\\final project\\x64\\";
+string base = #"put your base here";
 
 int showMenu(string title, vector<string> entries) {
     auto screen = ScreenInteractive::TerminalOutput();
