@@ -29,6 +29,7 @@ A fully functional, terminal-based e-commerce and store management system built 
 * `FileManager`: Handles reading from and writing to CSV files to ensure data persistence.
 * `OrderFinalizer`: Processes the final checkout, applies logic, and generates receipts.
 * `HistoryLogger`: Records and archives user transactions and purchase history.
+* 'to watch video':https://www.linkedin.com/posts/mohammed-hisham-09b85637a_cpp-programming-data-ugcPost-7461428564106784768-4lN0/?utm_source=share&utm_medium=member_desktop&rcm=ACoAAF29_fcB97-p5jOvuqn8WqcPDaVNHQLtL_k
 
 ## ⚙️ How to Run
 
